@@ -11,6 +11,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { classNames } from "~/lib/common";
+import ThemeToggle from "./ThemeToggle";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -42,7 +43,7 @@ export default function HomePage() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
+              <div className="fixed inset-0 bg-black bg-opacity-60" />
             </Transition.Child>
 
             <div className="fixed inset-0 z-40 flex">
@@ -55,7 +56,7 @@ export default function HomePage() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-gray-800">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-gray-200 dark:bg-gray-800">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -79,62 +80,8 @@ export default function HomePage() {
                       </button>
                     </div>
                   </Transition.Child>
-                  <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
-                    <div className="flex flex-shrink-0 items-center gap-x-3 px-4">
-                      <img
-                        className="h-8 w-auto rounded-md"
-                        src="logo.png"
-                        alt="HuddleGPT"
-                      />
-                      <p className="text-lg font-semibold">HuddleGPT</p>
-                    </div>
-                    <nav className="mt-5 space-y-1 px-2">
-                      {navigation.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          className={classNames(
-                            item.current
-                              ? "bg-gray-900 text-white"
-                              : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                            "group flex items-center rounded-md px-2 py-2 text-base font-medium"
-                          )}
-                        >
-                          <item.icon
-                            className={classNames(
-                              item.current
-                                ? "text-gray-300"
-                                : "text-gray-400 group-hover:text-gray-300",
-                              "mr-4 h-6 w-6 flex-shrink-0"
-                            )}
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </a>
-                      ))}
-                    </nav>
-                  </div>
-                  <div className="flex flex-shrink-0 p-4">
-                    <a href="#" className="group block flex-shrink-0">
-                      <div className="flex items-center">
-                        <div>
-                          <img
-                            className="inline-block h-10 w-10 rounded-full"
-                            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                            alt=""
-                          />
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-base font-medium text-white">
-                            Tom Cook
-                          </p>
-                          <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300">
-                            View profile
-                          </p>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
+
+                  <SidebarElements />
                 </Dialog.Panel>
               </Transition.Child>
               <div className="w-14 flex-shrink-0">
@@ -147,88 +94,102 @@ export default function HomePage() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex min-h-0 flex-1 flex-col bg-gray-800">
-            <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-              <div className="flex flex-shrink-0 items-center gap-x-3 px-4">
-                <img
-                  className="h-8 w-auto rounded-md"
-                  src="logo.png"
-                  alt="HuddleGPT"
-                />
-                <p className="text-lg font-semibold">HuddleGPT</p>
-              </div>
-              <nav className="mt-5 flex-1 space-y-1 px-2">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                      "group flex items-center rounded-md px-2 py-2 text-sm font-medium"
-                    )}
-                  >
-                    <item.icon
-                      className={classNames(
-                        item.current
-                          ? "text-gray-300"
-                          : "text-gray-400 group-hover:text-gray-300",
-                        "mr-3 h-6 w-6 flex-shrink-0"
-                      )}
-                      aria-hidden="true"
-                    />
-                    {item.name}
-                  </a>
-                ))}
-              </nav>
-            </div>
-            <div className="flex flex-shrink-0 p-4">
-              <a href="#" className="group block w-full flex-shrink-0">
-                <div className="flex items-center">
-                  <div>
-                    <img
-                      className="inline-block h-9 w-9 rounded-full"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt=""
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-white">Tom Cook</p>
-                    <p className="text-xs font-medium text-gray-300 group-hover:text-gray-200">
-                      View profile
-                    </p>
-                  </div>
-                </div>
-              </a>
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col bg-gray-200 dark:bg-gray-800">
+            <SidebarElements />
           </div>
         </div>
-        <div className="flex flex-1 flex-col lg:pl-64">
-          <div className="sticky top-0 z-10 bg-gray-700 pl-1 pt-1 sm:pl-3 sm:pt-3 lg:hidden">
+        <div className="flex flex-1 pt-4 lg:pl-64 border-b border-gray-400 dark:border-gray-500">
+          <div className="sticky top-0 z-10 pl-1 pt-1 bg-transparent sm:pl-3 lg:hidden">
             <button
               type="button"
-              className="-ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-300 focus:outline-none active:text-gray-400"
+              className="-ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-400 active:text-gray-500 dark:text-gray-300 focus:outline-none dark:active:text-gray-400"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
-          <main className="flex-1 border-b border-gray-500">
-            <div className="pt-8 pb-6">
-              {/* <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <h1 className="text-2xl font-semibold text-gray-100">
-                  Dashboard
-                </h1>
-              </div> */}
+          <main className="flex-1">
+            <div className="pt-2 pb-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 {/* Your content */}
-                <p className="text-xs font-light">Sharing with</p>
+                <p className="text-xs font-light flex items-center gap-x-2">
+                  Online Now{" "}
+                  <svg className="w-2 h-2 text-green-500 fill-current" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="50" />
+                  </svg>
+                </p>
                 <p className="">3 members</p>
               </div>
             </div>
           </main>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function SidebarElements() {
+  return (
+    <>
+      <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
+        <div className="flex flex-shrink-0 items-center gap-x-3 px-4">
+          <img
+            className="h-8 w-auto rounded-md"
+            src="logo.png"
+            alt="HuddleGPT"
+          />
+          <p className="text-lg font-semibold">HuddleGPT</p>
+        </div>
+        <nav className="mt-5 space-y-1 px-2">
+          {navigation.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className={classNames(
+                item.current
+                  ? "bg-gray-400 text-gray-900 dark:bg-gray-900 dark:text-white"
+                  : "text-gray-800 hover:bg-gray-400 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
+                "group flex items-center rounded-md px-2 py-2 text-base font-light"
+              )}
+            >
+              <item.icon
+                className={classNames(
+                  item.current
+                    ? "text-gray-300"
+                    : "text-gray-400 group-hover:text-gray-500",
+                  "mr-4 h-6 w-6 flex-shrink-0"
+                )}
+                aria-hidden="true"
+              />
+              {item.name}
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <div className="flex flex-col items-center gap-y-6 overflow-hidden p-4">
+        <ThemeToggle />
+        <div className="flex w-full flex-shrink-0">
+          <a href="#" className="group block flex-shrink-0">
+            <div className="flex items-center">
+              <div>
+                <img
+                  className="inline-block h-10 w-10 rounded-full"
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt=""
+                />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-light text-gray-700 dark:text-white">
+                  tomcook@apple.com
+                </p>
+                <button className="text-sm font-medium text-red-600 dark:text-red-500">
+                  Logout
+                </button>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     </>
