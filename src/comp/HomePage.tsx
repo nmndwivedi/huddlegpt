@@ -150,7 +150,7 @@ function SidebarElements() {
                 item.current
                   ? "bg-gray-400 text-gray-900 dark:bg-gray-900 dark:text-white"
                   : "text-gray-800 hover:bg-gray-400 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-                "group flex items-center rounded-md px-2 py-2 text-base font-light"
+                "group flex items-center rounded-md px-2 py-2 text-base font-normal"
               )}
             >
               <item.icon
