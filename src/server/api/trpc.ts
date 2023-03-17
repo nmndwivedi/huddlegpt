@@ -120,3 +120,14 @@ export const isAuthenticated = t.middleware(async ({ ctx, next }) => {
 
   return next({ ctx: { ...ctx, user: ctx.user } });
 });
+
+import Stripe from "stripe";
+import { STRIPE_SECRET_KEY } from "../../lib/env";
+
+export const attachStripe = t.middleware(async ({ ctx, next }) => {
+  const stripe = new Stripe(STRIPE_SECRET_KEY, {
+    apiVersion: "2022-11-15",
+  });
+
+  return next({ ctx: { ...ctx, stripe } });
+});

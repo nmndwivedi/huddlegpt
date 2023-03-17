@@ -9,18 +9,21 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      test: {
+      users: {
         Row: {
           created_at: string | null
           id: number
+          stripe_customer_id: string | null
         }
         Insert: {
-          created_at?: string | null
-          id?: number
+          created_at: string | null
+          id: number
+          stripe_customer_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: number
+          stripe_customer_id?: string | null
         }
       }
     }
