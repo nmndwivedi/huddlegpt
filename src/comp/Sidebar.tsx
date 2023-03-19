@@ -20,6 +20,8 @@ import {
 import useStore from "~/store/info";
 import LoginModal from "~/comp/LoginModal";
 import { useAuth } from "~/hooks/auth";
+import { api } from "~/utils/api";
+import { useRouter } from "next/router";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -119,6 +121,20 @@ function SidebarElements() {
   const { set, username } = useStore();
   const [modalOpen, setModalOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const r = useRouter();
+
+  const {mutateAsync: getCustomer} = api.stripe.createCustomer.useMutation();
+  const {mutateAsync: getPortalLink} = api.stripe.createCustomerPortalSession.useMutation();
+
+  async function handleSubs(event: React.MouseEvent<HTMLElement>) {
+    event.preventDefault();
+
+    const customer = await getCustomer();
+    const portal = await getPortalLink({customer_id :customer.customer_id});
+
+    r.push(`${portal.portal_link}`);
+  }
+
 
   return (
     <>
@@ -162,9 +178,7 @@ function SidebarElements() {
         {user && (
           <button
             className="w-full rounded-md bg-yellow-500 py-2 text-center font-medium text-black active:bg-gray-600"
-            onClick={(e) => {
-              e.preventDefault();
-            }}
+            onClick={handleSubs}
           >
             Subscription
           </button>

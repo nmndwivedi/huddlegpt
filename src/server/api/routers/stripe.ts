@@ -6,23 +6,34 @@ import { throwTRPCError } from "../../../lib/supabase";
 import { createTRPCRouter, isAuthenticated, publicProcedure, attachStripe } from "../trpc";
 
 export const stripe = createTRPCRouter({
-    createConnectedAccount: publicProcedure
+    createCustomer: publicProcedure
       .use(attachStripe)
       .use(isAuthenticated)
       .mutation(async ({ ctx }) => {
-        const { data } = await ctx.supabase
-          .from("users")
+        const { data } = await ctx.supamaster
+          .from("billing")
           .select("stripe_customer_id")
-          .eq("auth_id", ctx.user.id)
+          .eq("id", ctx.user.id)
           .maybeSingle();
-  
-        if (data?.stripe_customer_id && data?.stripe_customer_id !== "") {
-          return {account_id : data?.stripe_customer_id}
+
+        if (data === null) {
+          throwTRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get user data",
+          });
+          throw new Error();
         }
   
-        let account
+        if (data?.stripe_customer_id && data?.stripe_customer_id !== "") {
+          return {customer_id : data?.stripe_customer_id}
+        }
+  
+        let customer
         try {
-          account = await ctx.stripe.accounts.create({type: 'express'});
+          customer = await ctx.stripe.customers.create({
+            email: "bharat.ku.singh@gmail.com"
+          });
+          
         } catch (e) {
           throwTRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -31,12 +42,12 @@ export const stripe = createTRPCRouter({
           throw new Error();
         }
   
-        const { error } = await ctx.supabase
-          .from("users")
+        const { error } = await ctx.supamaster
+          .from("billing")
           .update({
-            stripe_customer_id: account.id
+            stripe_customer_id: customer.id
           })
-          .eq("auth_id", ctx.user.id)
+          .eq("id", ctx.user.id)
           .is("stripe_customer_id", null);
   
         if (error) {
@@ -46,20 +57,26 @@ export const stripe = createTRPCRouter({
           });
         }
   
-        return {account_id : account.id}
+        return {customer_id : customer.id}
     }),
     createCustomerPortalSession: publicProcedure
       .use(attachStripe)
       .use(isAuthenticated)
-      .input(z.object({account_id : z.string()}))
+      .input(z.object({customer_id : z.string()}))
       .mutation(async ({ input, ctx }) => {
         
         // Authenticate user.
         const session = await ctx.stripe.billingPortal.sessions.create({
-            customer: input.account_id,
+            customer: input.customer_id,
             return_url: `${NEXT_PUBLIC_SITE_URL}`,
         });
 
         return {portal_link : session.url}
+      }),
+    createSubscription: publicProcedure
+      .use(attachStripe)
+      .use(isAuthenticated)
+      .input(z.object({customer_id : z.string()}))
+      .mutation(async ({ input, ctx }) => {
       }),
   });
