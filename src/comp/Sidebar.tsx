@@ -31,30 +31,6 @@ const navigation = [
   { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
   { name: "Documents", href: "#", icon: InboxIcon, current: false },
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: InboxIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: InboxIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: InboxIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: InboxIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
 ];
 
 const Sidebar = ({
@@ -152,6 +128,10 @@ function SidebarElements() {
   const { mutateAsync: getPortalLink } =
     api.stripe.createCustomerPortalSession.useMutation();
 
+  const { data } = api.threads.getUserThreads.useQuery({
+    id: user?user.id : "898fb0c6-916b-4a2d-a476-933c82b59c8c" // Random UUID to avoid zod check
+  });
+
   async function handleSubs(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
 
@@ -186,6 +166,20 @@ function SidebarElements() {
               )}
             >
               {item.name}
+            </Link>
+          ))}
+          {data?.threads!.map((item) => (
+            <Link
+              key={item.title}
+              href={""}
+              className={classNames(
+                false // TODO check if the thread is selected
+                  ? "bg-gray-400 text-gray-900 dark:bg-gray-900 dark:text-white"
+                  : "text-gray-800 hover:bg-gray-400 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
+                "group flex items-center rounded-md px-2 py-2 text-base font-normal"
+              )}
+            >
+              {item.title}
             </Link>
           ))}
         </nav>
