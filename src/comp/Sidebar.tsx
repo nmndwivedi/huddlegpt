@@ -22,8 +22,33 @@ import LoginModal from "~/comp/LoginModal";
 import { useAuth } from "~/hooks/auth";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 const navigation = [
+  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+  { name: "Team", href: "#", icon: UsersIcon, current: false },
+  { name: "Projects", href: "#", icon: FolderIcon, current: false },
+  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Documents", href: "#", icon: InboxIcon, current: false },
+  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+  { name: "Team", href: "#", icon: UsersIcon, current: false },
+  { name: "Projects", href: "#", icon: FolderIcon, current: false },
+  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Documents", href: "#", icon: InboxIcon, current: false },
+  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+  { name: "Team", href: "#", icon: UsersIcon, current: false },
+  { name: "Projects", href: "#", icon: FolderIcon, current: false },
+  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Documents", href: "#", icon: InboxIcon, current: false },
+  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
+  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
+  { name: "Team", href: "#", icon: UsersIcon, current: false },
+  { name: "Projects", href: "#", icon: FolderIcon, current: false },
+  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Documents", href: "#", icon: InboxIcon, current: false },
+  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
   { name: "Team", href: "#", icon: UsersIcon, current: false },
   { name: "Projects", href: "#", icon: FolderIcon, current: false },
@@ -123,33 +148,34 @@ function SidebarElements() {
   const { user, signOut } = useAuth();
   const r = useRouter();
 
-  const {mutateAsync: getCustomer} = api.stripe.createCustomer.useMutation();
-  const {mutateAsync: getPortalLink} = api.stripe.createCustomerPortalSession.useMutation();
+  const { mutateAsync: getCustomer } = api.stripe.createCustomer.useMutation();
+  const { mutateAsync: getPortalLink } =
+    api.stripe.createCustomerPortalSession.useMutation();
 
   async function handleSubs(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
 
     const customer = await getCustomer();
-    const portal = await getPortalLink({customer_id :customer.customer_id});
+    const portal = await getPortalLink({ customer_id: customer.customer_id });
 
     r.push(`${portal.portal_link}`);
   }
 
-
   return (
     <>
-      <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
-        <div className="flex flex-shrink-0 items-center gap-x-3 px-4">
-          <img
-            className="h-8 w-auto rounded-md"
-            src="/logo.png"
-            alt="HuddleGPT"
-          />
-          <p className="text-lg font-semibold">HuddleGPT</p>
-        </div>
-        <nav className="mt-5 space-y-1 px-2">
+      <div className="sticky my-5 flex flex-shrink-0 items-center gap-x-3 px-4">
+        <img
+          className="h-8 w-auto rounded-md"
+          src="/logo.png"
+          alt="HuddleGPT"
+        />
+        <p className="text-lg font-semibold">HuddleGPT</p>
+      </div>
+
+      <div className="h-0 flex-1 overflow-y-auto">
+        <nav className="space-y-1 px-2">
           {navigation.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               className={classNames(
@@ -159,17 +185,8 @@ function SidebarElements() {
                 "group flex items-center rounded-md px-2 py-2 text-base font-normal"
               )}
             >
-              <item.icon
-                className={classNames(
-                  item.current
-                    ? "text-gray-300"
-                    : "text-gray-400 group-hover:text-gray-500",
-                  "mr-4 h-6 w-6 flex-shrink-0"
-                )}
-                aria-hidden="true"
-              />
               {item.name}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
