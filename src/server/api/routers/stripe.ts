@@ -31,7 +31,7 @@ export const stripe = createTRPCRouter({
         let customer
         try {
           customer = await ctx.stripe.customers.create({
-            email: "bharat.ku.singh@gmail.com"
+            email: ctx.user.email
           });
           
         } catch (e) {
