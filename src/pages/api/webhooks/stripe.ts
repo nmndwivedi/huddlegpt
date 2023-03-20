@@ -41,17 +41,21 @@ export default async function handler(
   // Handle the event
   switch (event.type) {
     case "customer.subscription.created":
-      await supamaster.from("billing").update({
+      response = await supamaster.from("billing").update({
         subscribed: true
       }).eq("stripe_account_id", event.data.object.customer);
       break;
     case "customer.subscription.deleted":
-      await supamaster.from("billing").update({
+      response = await supamaster.from("billing").update({
         subscribed: false
       }).eq("stripe_account_id", event.data.object.customer);
       break;
     default:
       break;
+  }
+
+  if (response?.error) {
+    return res.status(response.status).json({ text: response.statusText });
   }
 
   return res.status(200); //.json({ received: true, data: response?.data });
