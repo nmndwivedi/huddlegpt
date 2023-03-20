@@ -58,7 +58,7 @@ export interface Database {
           created_at: string | null
           id: string
           prompter_link: string | null
-          title: string
+          title: string | null
           updated_at: string
           viewer_link: string | null
         }
@@ -67,7 +67,7 @@ export interface Database {
           created_at?: string | null
           id?: string
           prompter_link?: string | null
-          title: string
+          title?: string | null
           updated_at?: string
           viewer_link?: string | null
         }
@@ -76,7 +76,7 @@ export interface Database {
           created_at?: string | null
           id?: string
           prompter_link?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string
           viewer_link?: string | null
         }
