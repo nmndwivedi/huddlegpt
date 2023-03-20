@@ -40,44 +40,16 @@ export default async function handler(
   let response;
   // Handle the event
   switch (event.type) {
-    // case "transfer.created":
-    //   // Update balance
-    //   response = await supamaster
-    //     .from("engineers")
-    //     .update({
-    //       balance_under_process: 0,
-    //     })
-    //     .eq("stripe_account_id", event.data.object.destination);
-
-    //   if (response.error) {
-    //     return res.status(response.status).json({ text: response.statusText });
-    //   }
-    //   break;
-    // case "payment_intent.succeeded":
-    //   // Update balance
-    //   const topup = (event.data.object.amount * (1 - 0.029) - 30) / 100;
-    //   response = await supamaster.rpc("topup_user_balance", {
-    //     amount: topup,
-    //     customer_id: event.data.object.customer! as string,
-    //   });
-
-    //   if (response.error) {
-    //     return res.status(response.status).json({ text: response.statusText });
-    //   }
-    //   break;
-    // case "customer.created":
-    //   // Update balance
-    //   const customer = event.data.object;
-
-    //   response = await supamaster
-    //     .from("billing")
-    //     .update({ stripe_customer_id: customer.id })
-    //     .eq("auth_id", customer.metadata.auth_id);
-
-    //   if (response.error) {
-    //     return res.status(response.status).json({ text: response.statusText });
-    //   }
-    //   break;
+    case "customer.subscription.created":
+      await supamaster.from("billing").update({
+        subscribed: true
+      }).eq("stripe_account_id", event.data.object.customer);
+      break;
+    case "customer.subscription.deleted":
+      await supamaster.from("billing").update({
+        subscribed: false
+      }).eq("stripe_account_id", event.data.object.customer);
+      break;
     default:
       break;
   }
