@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { throwTRPCError } from "~/lib/supabase";
 import { createTRPCRouter, isAuthenticated, publicProcedure } from "../trpc";
+import { OPEN_AI } from "~/lib/env";
 
 export const openai = createTRPCRouter({
   setThreadTitle: publicProcedure
@@ -15,8 +16,7 @@ export const openai = createTRPCRouter({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
+            Authorization: "Bearer " + OPEN_AI,
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
@@ -123,8 +123,7 @@ export const openai = createTRPCRouter({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
+            Authorization: "Bearer " + OPEN_AI,
           },
           body: JSON.stringify({
             //TODO fix

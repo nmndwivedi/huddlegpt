@@ -34,14 +34,20 @@ const Chat = () => {
   useEffect(() => {
     if (!user || !thread) return;
 
-    const channel = supabaseClient.channel(thread.id);
+    const channel = supabaseClient.channel(thread.id, {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
 
     channel
       .on("broadcast", { event: "supa" }, (payload) => console.log(payload))
       .subscribe();
 
     channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
+      if (status === "SUBSCRIBED" && thread.admin === user.id) {
         channel.send({
           type: "broadcast",
           event: "supa",
