@@ -31,33 +31,59 @@ export interface Database {
       }
       messages: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
+          parent_id: string | null
+          sender_auth_id: string | null
           text: string
           thread_id: string
-          user_id: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
+          parent_id?: string | null
+          sender_auth_id?: string | null
           text: string
           thread_id: string
-          user_id?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
+          parent_id?: string | null
+          sender_auth_id?: string | null
           text?: string
           thread_id?: string
-          user_id?: string | null
+        }
+      }
+      metadata: {
+        Row: {
+          avatar: string | null
+          created_at: string | null
+          id: string
+          username: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string | null
+          id: string
+          username?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string | null
+          id?: string
+          username?: string | null
         }
       }
       threads: {
         Row: {
           admin_auth_id: string
           created_at: string | null
+          creativity: number
           id: string
+          model: string
           prompter_link: string | null
+          role: string
           title: string | null
           updated_at: string
           viewer_link: string | null
@@ -65,8 +91,11 @@ export interface Database {
         Insert: {
           admin_auth_id: string
           created_at?: string | null
+          creativity?: number
           id?: string
+          model?: string
           prompter_link?: string | null
+          role?: string
           title?: string | null
           updated_at?: string
           viewer_link?: string | null
@@ -74,8 +103,11 @@ export interface Database {
         Update: {
           admin_auth_id?: string
           created_at?: string | null
+          creativity?: number
           id?: string
+          model?: string
           prompter_link?: string | null
+          role?: string
           title?: string | null
           updated_at?: string
           viewer_link?: string | null

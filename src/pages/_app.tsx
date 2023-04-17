@@ -21,14 +21,14 @@ const MyApp = ({
   useInit();
 
   return (
-    <SessionContextProvider
-      supabaseClient={supabaseClient}
-      initialSession={pageProps.initialSession}
-    >
-      <ThemeProvider attribute="class">
+    <ThemeProvider attribute="class">
+      <SessionContextProvider
+        supabaseClient={supabaseClient}
+        initialSession={pageProps.initialSession}
+      >
         <Component {...pageProps} />
-      </ThemeProvider>
-    </SessionContextProvider>
+      </SessionContextProvider>
+    </ThemeProvider>
   );
 };
 

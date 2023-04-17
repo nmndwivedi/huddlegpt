@@ -1,4 +1,4 @@
-import { Provider } from "@supabase/supabase-js";
+import { Provider, User } from "@supabase/supabase-js";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
 import { api } from "../utils/api";
@@ -6,7 +6,21 @@ import { NEXT_PUBLIC_SITE_URL } from "../lib/env";
 
 export const useAuth = () => {
   const supabase = useSupabaseClient();
+  const utils = api.useContext();
   const user = useUser();
+  const { data } = api.metadata.getMetadataForUser.useQuery(
+    { userId: user?.id },
+    {
+      enabled: !!user,
+    }
+  );
+  const { mutate: setMetadata } = api.metadata.setMetadata.useMutation({
+    onSuccess: () => {
+      utils.metadata.getMetadataForUser.invalidate({ userId: user?.id });
+    },
+  });
+  const r = useRouter();
+
   // const { data: { balance = null, freetier = null } = {} } =
   //   api.balances.getBalance.useQuery(undefined, {
   //     enabled: user !== null,
@@ -18,7 +32,6 @@ export const useAuth = () => {
   //   api.engineers.getMyProfile.useQuery(undefined, {
   //     enabled: user !== null,
   //   });
-  const r = useRouter();
 
   async function signIn(
     params:
@@ -32,27 +45,29 @@ export const useAuth = () => {
       await supabase.auth.signInWithOAuth({
         provider: params.provider,
         options: {
-          redirectTo: `${NEXT_PUBLIC_SITE_URL}/explore`,
+          redirectTo: `${NEXT_PUBLIC_SITE_URL}`,
         },
       });
     else
       await supabase.auth.signInWithOtp({
         email: params.email,
         options: {
-          emailRedirectTo: `${NEXT_PUBLIC_SITE_URL}/explore`,
+          emailRedirectTo: `${NEXT_PUBLIC_SITE_URL}`,
         },
       });
   }
 
   async function signOut() {
     await supabase.auth.signOut();
-    r.reload();
+    r.push("/");
   }
 
   return {
     signIn,
     signOut,
     user,
+    metadata: data?.metadata || null,
+    setMetadata,
     // balance,
     // freetier,
     // key,

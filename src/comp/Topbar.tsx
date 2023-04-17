@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import Spinner from "./Spinner";
 import ShareLinksModal from "~/comp/ShareLinksModal";
+import useStore from "~/store/store";
 
 export default function Main({
   setSidebarOpen,
@@ -11,29 +12,23 @@ export default function Main({
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { mutateAsync: getShareableLinkForThread } =
-    api.threads.getShareableLinkForThread.useMutation({
-      onSuccess: (data) => {
-        console.log(data);
-      },
-    });
+    api.threads.getShareableLinkForThread.useMutation();
   const [modalOpen, setModalOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [links, setLinks] = useState<{
     prompterLink: string;
     viewerLink: string;
   }>({ prompterLink: "", viewerLink: "" });
-
-  const { mutateAsync: generateThread } =
-    api.threads.generateNewThread.useMutation();
+  const { selectedChatId } = useStore();
 
   const r = useRouter();
 
   useEffect(() => {
     async function exec() {
-      if (r.query.id && r.query.share) {
+      if (selectedChatId && r.query.share) {
         setSpinning(true);
         const { prompterLink, viewerLink } = await getShareableLinkForThread({
-          id: r.query.id as string,
+          id: selectedChatId,
         });
 
         if (prompterLink && viewerLink) {
@@ -41,6 +36,9 @@ export default function Main({
           setModalOpen(true);
         }
         setSpinning(false);
+
+        const newUrl = `/chat/${selectedChatId}`;
+        r.push(newUrl);
       }
     }
 
@@ -48,27 +46,25 @@ export default function Main({
   }, []);
 
   async function handleClick() {
-    const threadId = r.query.id as string | undefined;
     setSpinning(true);
-    if (!threadId) {
-      const { threadId } = await generateThread();
-      r.push(`/chat/${threadId}?share=true`);
+    if (!selectedChatId) {
+      document.dispatchEvent(new CustomEvent("message-gen-from-topbar"));
     } else {
       const { prompterLink, viewerLink } = await getShareableLinkForThread({
-        id: threadId,
+        id: selectedChatId,
       });
 
       if (prompterLink && viewerLink) {
         setLinks({ prompterLink, viewerLink });
         setModalOpen(true);
       }
-      setSpinning(false);
     }
+    setSpinning(false);
   }
 
   return (
     <>
-      <div className="absolute top-0 z-10 flex h-24 w-full flex-none items-center border-b border-gray-400 bg-gray-200 dark:border-gray-500 dark:bg-gray-800">
+      <div className="top-0 z-10 flex h-24 w-full flex-none items-center border-b border-gray-400 bg-gray-200 dark:border-gray-500 dark:bg-gray-800">
         <div className="top-0 z-10 ml-2 pl-1 pt-1 sm:pl-3 lg:hidden">
           <button
             type="button"
@@ -122,7 +118,7 @@ export default function Main({
             </div>
             <button
               onClick={handleClick}
-              className="mr-4 flex flex-none items-center gap-x-2 rounded-md bg-emerald-700 px-3 py-2 text-sm active:bg-emerald-800"
+              className="mr-4 flex flex-none items-center gap-x-2 rounded-md bg-emerald-700 px-3 py-2 text-sm text-white active:bg-emerald-800"
             >
               Get Share Link
               {!spinning && <ShareIcon className="h-5 w-5" />}

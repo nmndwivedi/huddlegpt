@@ -6,6 +6,8 @@ import { RealtimeChannel, RealtimePresenceState } from "@supabase/supabase-js";
 import Head from "next/head";
 import Sidebar from "~/comp/Sidebar";
 import Main from "~/comp/Topbar";
+import { useAuth } from "~/hooks/auth";
+import { api } from "~/utils/api";
 
 const Chat = () => {
   const {
@@ -13,55 +15,68 @@ const Chat = () => {
   } = useRouter();
 
   const supabaseClient = useSupabaseClient();
-  const this_user = { email: "hellomail@gmail" };
+
+  const { user } = useAuth();
+
+  const {
+    data: thread,
+    isLoading,
+    isError,
+  } = api.threads.getThreadIdFromLinkCode.useQuery(
+    { linkCode: code as string },
+    { enabled: !!code }
+  );
+
   const [userState, setUserState] = useState<RealtimePresenceState>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [pchannel, setPChannel] = useState<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    const channel = supabaseClient.channel("online-users", {
-      config: {
-        presence: {
-          key: this_user?.email ? this_user?.email : "Unknown",
-        },
-      },
-    });
+    if (!user || !thread) return;
 
-    channel.on("presence", { event: "sync" }, () => {
-      const presentState = channel.presenceState();
+    const channel = supabaseClient.channel(thread.id);
 
-      console.log("inside presence: ", presentState);
+    channel
+      .on("broadcast", { event: "supa" }, (payload) => console.log(payload))
+      .subscribe();
 
-      setUserState({ ...presentState });
-    });
-
-    channel.on("presence", { event: "join" }, ({ newPresences }) => {
-      console.log("New users have joined: ", newPresences);
-    });
-
-    channel.subscribe(async (status) => {
+    channel.subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        const status = await channel.track({
-          message: Math.round(Math.random() * 1000),
-          user_name: this_user?.email ? this_user?.email : "Unknown",
+        channel.send({
+          type: "broadcast",
+          event: "supa",
+          payload: { org: "supabase" },
         });
-        console.log("status: ", status);
       }
     });
 
-    setChannel(channel);
+    // channel.on("presence", { event: "sync" }, () => {
+    //   setUserState({ ...channel.presenceState() });
+    // });
+
+    // channel.subscribe(async (status) => {
+    //   if (status === "SUBSCRIBED") {
+    //     await channel.track({
+    //       message: Math.round(Math.random() * 1000),
+    //       userId: user?.id,
+    //       access: thread?.access,
+    //     });
+    //   }
+    // });
+
+    setPChannel(channel);
 
     return () => {
       channel?.unsubscribe();
     };
-  }, []);
+  }, [user, thread]);
 
-  async function but() {
-    const status = await channel?.track({
+  async function buttonHandle() {
+    await pchannel?.track({
       message: Math.round(Math.random() * 1000),
-      user_name: this_user?.email ? this_user?.email : "Unknown",
+      userId: user?.id,
+      access: thread?.access,
     });
-    console.log("status: ", status);
   }
 
   return (
@@ -70,7 +85,7 @@ const Chat = () => {
       <p className="whitespace-pre-wrap">
         {JSON.stringify(userState, null, 2)}
       </p>
-      <button onClick={but}>send</button>
+      <button onClick={buttonHandle}>send</button>
       {/* <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <Main setSidebarOpen={setSidebarOpen} /> */}
     </>

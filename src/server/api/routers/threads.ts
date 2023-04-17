@@ -9,31 +9,30 @@ import { throwTRPCError } from "../../../lib/supabase";
 import { v4 as uuidv4 } from "uuid";
 
 export const threads = createTRPCRouter({
-  getThread: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ input, ctx }) => {
-      const { data } = await ctx.supamaster
-        .from("threads")
-        .select("*")
-        .eq("id", input.id)
-        .maybeSingle();
-
-      if (!data)
-        throwTRPCError({
-          code: "NOT_FOUND",
-          message: "Thread Not Found",
-        });
-
-      return {
-        thread: data,
-      };
-    }),
-  generateNewThread: publicProcedure
+  generateNewThreadWithMessage: publicProcedure
     .use(isAuthenticated)
-    .mutation(async ({ ctx }) => {
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        model: z.string().min(1),
+        creativity: z.number().min(0).max(1),
+        role: z.string().min(1),
+        msgId: z.string().uuid(),
+        text: z.string().min(1).nullish(),
+        username: z.string().min(1).nullish(),
+        avatar: z.string().min(1).nullish(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
       const { data } = await ctx.supamaster
         .from("threads")
-        .insert({ admin_auth_id: ctx.user.id })
+        .insert({
+          id: input.id,
+          admin_auth_id: ctx.user.id,
+          model: input.model,
+          creativity: input.creativity,
+          role: input.role,
+        })
         .select()
         .single();
 
@@ -45,29 +44,77 @@ export const threads = createTRPCRouter({
         throw new Error();
       }
 
+      if (input.text) {
+        const { data: message } = await ctx.supamaster
+          .from("messages")
+          .insert({
+            id: input.msgId,
+            text: input.text,
+            thread_id: data.id,
+            sender_auth_id: ctx.user.id,
+            username: input.username,
+            avatar: input.avatar,
+          })
+          .select()
+          .single();
+
+        if (!message) {
+          throwTRPCError({
+            code: "NOT_FOUND",
+            message: "Thread Not Found",
+          });
+          throw new Error();
+        }
+      }
+
       return {
         threadId: data.id,
       };
     }),
-  getUserThreads: publicProcedure
+  getThread: publicProcedure
+    .use(isAuthenticated)
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
       const { data } = await ctx.supamaster
         .from("threads")
         .select("*")
-        .eq("admin_auth_id", input.id);
+        .eq("id", input.id)
+        .maybeSingle();
 
-      if (!data)
+      if (!data || data.admin_auth_id !== ctx.user.id) {
+        throwTRPCError({
+          code: "NOT_FOUND",
+          message: "Thread Not Found",
+        });
+        throw new Error();
+      }
+
+      return {
+        thread: data,
+      };
+    }),
+  getUserThreads: publicProcedure
+    .use(isAuthenticated)
+    .query(async ({ ctx }) => {
+      const { data } = await ctx.supamaster
+        .from("threads")
+        .select("*,messages(count)")
+        .eq("admin_auth_id", ctx.user.id)
+        .order("created_at", { ascending: false });
+
+      if (!data) {
         throwTRPCError({
           code: "NOT_FOUND",
           message: "Threads Not Found",
         });
+      }
 
       return {
-        threads: data,
+        threads: data?.filter((d) => (d.messages as any)[0]?.count > 0),
       };
     }),
   getShareableLinkForThread: publicProcedure
+    .use(isAuthenticated)
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       const { data: thread } = await ctx.supamaster
@@ -76,10 +123,10 @@ export const threads = createTRPCRouter({
         .eq("id", input.id)
         .single();
 
-      if (!thread) {
+      if (!thread || thread.admin_auth_id !== ctx.user.id) {
         throwTRPCError({
           code: "NOT_FOUND",
-          message: "Threads Not Found",
+          message: "Thread Not Found",
         });
         throw new Error();
       }
@@ -114,5 +161,43 @@ export const threads = createTRPCRouter({
         prompterLink,
         viewerLink,
       };
+    }),
+  getThreadIdFromLinkCode: publicProcedure
+    .use(isAuthenticated)
+    .input(z.object({ linkCode: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const { data: thread } = await ctx.supamaster
+        .from("threads")
+        .select("id,admin_auth_id")
+        .eq("prompter_link", input.linkCode)
+        .single();
+
+      if (!!thread) {
+        return {
+          id: thread.id,
+          admin: thread.admin_auth_id,
+          access: "prompter",
+        };
+      }
+
+      const { data } = await ctx.supamaster
+        .from("threads")
+        .select("id,admin_auth_id")
+        .eq("viewer_link", input.linkCode)
+        .single();
+
+      if (!!data) {
+        return {
+          id: data.id,
+          admin: data.admin_auth_id,
+          access: "viewer",
+        };
+      }
+
+      throwTRPCError({
+        code: "NOT_FOUND",
+        message: "Thread Not Found",
+      });
+      throw new Error();
     }),
 });

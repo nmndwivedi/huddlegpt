@@ -43,12 +43,12 @@ export default async function handler(
     case "customer.subscription.created":
       response = await supamaster.from("billing").update({
         subscribed: true
-      }).eq("stripe_account_id", event.data.object.customer);
+      }).eq("stripe_customer_id", event.data.object.customer);
       break;
     case "customer.subscription.deleted":
       response = await supamaster.from("billing").update({
         subscribed: false
-      }).eq("stripe_account_id", event.data.object.customer);
+      }).eq("stripe_customer_id", event.data.object.customer);
       break;
     default:
       break;

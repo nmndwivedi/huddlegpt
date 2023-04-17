@@ -8,6 +8,16 @@
 import { Database } from "../../schema";
 import { PartialBy } from "./utility";
 
+import type { AppRouter } from "../../server/api/root";
+import type { inferRouterOutputs } from "@trpc/server";
+
+type ArrayElement<ArrayType extends readonly unknown[]> =
+  ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+
+export type ModMessage = ArrayElement<
+  inferRouterOutputs<AppRouter>["messages"]["getThreadMessages"]["messages"]
+>;
+
 // export type RawPrompt = PartialBy<
 //   Database["public"]["Tables"]["prompts"]["Row"] & {
 //     engineers: Pick<

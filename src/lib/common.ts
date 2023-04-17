@@ -87,3 +87,19 @@ export function compactNumber(number: number) {
 export function dollariseNumber(number: number) {
   return "$" + number.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
+
+export function formatDate(isoDateString: string) {
+  const date = new Date(isoDateString);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: "2-digit",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    timeZone: "UTC",
+  };
+
+  const formatter = new Intl.DateTimeFormat("en-US", options);
+  return formatter.format(date);
+}
