@@ -51,21 +51,6 @@ export const openai = createTRPCRouter({
 
       return { title };
     }),
-
-  /**
-      thread: {
-    admin_auth_id: string;
-    created_at: string | null;
-    creativity: number;
-    id: string;
-    model: string;
-    prompter_link: string | null;
-    role: string;
-    title: string | null;
-    updated_at: string;
-    viewer_link: string | null;
-}
-     */
   promptThread: publicProcedure
     .use(isAuthenticated)
     .input(z.object({ threadId: z.string().uuid() }))

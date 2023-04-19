@@ -80,11 +80,6 @@ const Chat = () => {
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="relative flex flex-1 flex-col items-center w-full">
           <Topbar setSidebarOpen={setSidebarOpen} />
-          <div className="pointer-events-none absolute top-24 z-10 h-16 w-full bg-gradient-to-b from-gray-600 opacity-20 dark:from-black"></div>
-          <div className="pointer-events-none absolute bottom-0 z-10 h-32 w-full bg-gradient-to-t from-black opacity-40 dark:opacity-60"></div>
-
-          <Settingbar />
-
           <Chatbox />
         </div>
       </div>

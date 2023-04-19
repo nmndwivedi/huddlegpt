@@ -59,7 +59,7 @@ export function ExpandingTextarea({
     <div className="absolute bottom-0 z-40 flex w-full justify-center">
       <div className="relative flex w-full max-w-2xl justify-center ">
         <textarea
-          className="mx-12 mb-8 w-full rounded-md border-2 border-gray-300 py-3 pr-16 pl-6 shadow-inner dark:border-gray-400 dark:bg-gray-800"
+          className="mx-12 mb-8 w-full z-10 rounded-md border border-gray-400 py-3 pr-16 pl-6 shadow-inner dark:border-gray-400 dark:bg-gray-800"
           style={textareaStyles}
           value={value}
           onChange={handleChange}
@@ -84,6 +84,7 @@ export function ExpandingTextarea({
           {sending && <Spinner />}
         </button>
       </div>
+      <div className="pointer-events-none absolute bottom-0 z-0 h-32 w-full bg-gradient-to-t from-black opacity-60"></div>
     </div>
   );
 }

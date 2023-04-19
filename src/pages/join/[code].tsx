@@ -14,84 +14,12 @@ const Chat = () => {
     query: { code },
   } = useRouter();
 
-  const supabaseClient = useSupabaseClient();
-
-  const { user } = useAuth();
-
-  const {
-    data: thread,
-    isLoading,
-    isError,
-  } = api.threads.getThreadIdFromLinkCode.useQuery(
-    { linkCode: code as string },
-    { enabled: !!code }
-  );
-
-  const [userState, setUserState] = useState<RealtimePresenceState>({});
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [pchannel, setPChannel] = useState<RealtimeChannel | null>(null);
-
-  useEffect(() => {
-    if (!user || !thread) return;
-
-    const channel = supabaseClient.channel(thread.id, {
-      config: {
-        presence: {
-          key: user.id,
-        },
-      },
-    });
-
-    channel
-      .on("broadcast", { event: "supa" }, (payload) => console.log(payload))
-      .subscribe();
-
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED" && thread.admin === user.id) {
-        channel.send({
-          type: "broadcast",
-          event: "supa",
-          payload: { org: "supabase" },
-        });
-      }
-    });
-
-    // channel.on("presence", { event: "sync" }, () => {
-    //   setUserState({ ...channel.presenceState() });
-    // });
-
-    // channel.subscribe(async (status) => {
-    //   if (status === "SUBSCRIBED") {
-    //     await channel.track({
-    //       message: Math.round(Math.random() * 1000),
-    //       userId: user?.id,
-    //       access: thread?.access,
-    //     });
-    //   }
-    // });
-
-    setPChannel(channel);
-
-    return () => {
-      channel?.unsubscribe();
-    };
-  }, [user, thread]);
-
-  async function buttonHandle() {
-    await pchannel?.track({
-      message: Math.round(Math.random() * 1000),
-      userId: user?.id,
-      access: thread?.access,
-    });
-  }
-
   return (
     <>
       <PageHead />
       <p className="whitespace-pre-wrap">
-        {JSON.stringify(userState, null, 2)}
+        {/* {JSON.stringify(userState, null, 2)} */}
       </p>
-      <button onClick={buttonHandle}>send</button>
       {/* <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <Main setSidebarOpen={setSidebarOpen} /> */}
     </>

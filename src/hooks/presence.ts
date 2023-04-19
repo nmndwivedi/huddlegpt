@@ -1,32 +1,150 @@
-import React, { useEffect, useRef, useState } from "react";
-import MessageComp from "~/comp/Message";
-import { ExpandingTextarea } from "~/comp/ExpandingTextarea";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import type {
+  RealtimeChannel,
+  RealtimePresenceState,
+} from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import { useAuth } from "./auth";
 import { api } from "~/utils/api";
-import Spinner from "~/comp/Spinner";
-import { useAuth } from "~/hooks/auth";
-import useStore from "~/store/store";
+import { ModMessage } from "~/lib/ts/modified";
 import { v4 as uuidv4 } from "uuid";
+import useStore from "~/store/store";
 // @ts-ignore
 import { SSE } from "sse";
-import { ModMessage } from "~/lib/ts/modified";
-import { usePresence } from "~/hooks/presence";
 
-const Chatbox = ({ joinCode }: { joinCode?: string }) => {
-  const utils = api.useContext();
+type PresenceInputs =
+  | {
+      type: "code";
+      code: string;
+    }
+  | {
+      type: "admin";
+      threadId: string;
+    }
+  | null;
+
+export const usePresence = (input: PresenceInputs) => {
+  if (!input) return null;
+
+  return {
+    ...(input.type === "code"
+      ? useAttendeePresence({ code: input.code })
+      : useAdminPresence({ threadId: input.threadId })),
+  };
+};
+
+const useAttendeePresence = ({ code }: { code: string }) => {
+  const supabaseClient = useSupabaseClient();
+
+  const [userState, setUserState] = useState<RealtimePresenceState>({});
+  const [pchannel, setPChannel] = useState<RealtimeChannel | null>(null);
+
   const { user } = useAuth();
 
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  //   const { data: thread } = api.threads.getThreadIdFromLinkCode.useQuery({
+  //     linkCode: code,
+  //   });
 
+  //   useEffect(() => {
+  //     if (!user || !thread) return;
+
+  //     const channel = supabaseClient.channel(thread.id, {
+  //       config: {
+  //         presence: {
+  //           key: user.id,
+  //         },
+  //       },
+  //     });
+
+  //     channel.on("presence", { event: "sync" }, () => {
+  //       setUserState({ ...channel.presenceState() });
+  //     });
+
+  //     channel.subscribe(async (status) => {
+  //       if (status === "SUBSCRIBED") {
+  //         await channel.track({
+  //           userId: user.id,
+  //           access: thread.access,
+  //           typing: false,
+  //         });
+  //       }
+  //     });
+
+  //     setPChannel(channel);
+
+  //     return () => {
+  //       channel?.unsubscribe();
+  //     };
+  //   }, [user, thread]);
+
+  return {
+    type: "attendee" as const,
+  };
+};
+
+const useAdminPresence = ({ threadId }: { threadId: string }) => {
+  const supabaseClient = useSupabaseClient();
+
+  const [userState, setUserState] = useState<RealtimePresenceState>({});
+  const [pchannel, setPChannel] = useState<RealtimeChannel | null>(null);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || !threadId) return;
+
+    const channel = supabaseClient.channel(threadId, {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    channel.on("presence", { event: "sync" }, () => {
+      setUserState({ ...channel.presenceState() });
+    });
+
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await channel.track({
+          userId: user.id,
+          access: "admin",
+          streaming: false,
+          typing: false,
+          //   messages,
+          //   thread,
+        });
+      }
+    });
+
+    setPChannel(channel);
+
+    return () => {
+      channel?.unsubscribe();
+    };
+  }, [user, threadId]);
+
+  return {
+    type: "admin" as const,
+    abc: "def",
+  };
+};
+
+export const useSinglePresence = ({
+  setIsScrolling,
+}: {
+  setIsScrolling: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const utils = api.useContext();
   const { selectedChatId } = useStore();
   const [displayChain, setDisplayChain] = useState<ModMessage[]>([]);
   const [triggerCheck, setTriggerCheck] = useState<boolean>(true);
+  const { user } = useAuth();
 
   let [sseSource, setSseSource] = useState<any>(null);
-  let [scrollHt, setScrollHt] = useState(0);
-  let [isScrolling, setIsScrolling] = useState(true);
 
   let [temporaryResponse, setTemporaryResponse] = useState("");
-  let [cursor, setCursor] = useState("▋");
 
   const { mutateAsync: setThreadTitle } =
     api.openai.setThreadTitle.useMutation();
@@ -378,35 +496,7 @@ const Chatbox = ({ joinCode }: { joinCode?: string }) => {
     e();
   }, [threadMessagesData, threadData]);
 
-  // Cursor for visual effect
-  useEffect(() => {
-    const i = setInterval(() => setCursor((c) => (c === "" ? "▋" : "")), 500);
-
-    return () => {
-      if (i) clearInterval(i);
-    };
-  }, []);
-
-  // Always scroll the last message into view when display chain changes
-  useEffect(() => {
-    if (scrollRef.current && displayChain.length > 0) {
-      scrollRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [displayChain]);
-
-  // When reponse is streaming and user hasnt manually scrolled, always keep last line in focus
-  useEffect(() => {
-    if (temporaryResponse !== "" && isScrolling && scrollRef.current) {
-      scrollRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [temporaryResponse]);
-
+  // When user navigates to new thread using sidebar, a check for auto prompt is triggered
   useEffect(() => {
     setTriggerCheck(true);
   }, [selectedChatId]);
@@ -466,97 +556,5 @@ const Chatbox = ({ joinCode }: { joinCode?: string }) => {
     setTriggerCheck(true);
   }
 
-  return (
-    <>
-      <div
-        className="w-full flex-1 overflow-y-scroll pb-64"
-        onScroll={(e) => {
-          const ht = (e.target as any).scrollTop;
-          if (ht < scrollHt) setIsScrolling(false);
-          setScrollHt(ht);
-        }}
-      >
-        {(isLoadingThread || isLoadingMessages) && (
-          <div className="flex h-full w-full scale-150 items-center justify-center opacity-60">
-            <Spinner />
-          </div>
-        )}
 
-        {(isErrorThread || isErrorMessages) && (
-          <div className="flex h-full w-full scale-150 items-center justify-center text-base font-light opacity-60">
-            Something went wrong :/
-          </div>
-        )}
-
-        {!isLoadingThread &&
-          !isLoadingMessages &&
-          !isErrorThread &&
-          !isErrorMessages &&
-          displayChain.length > 0 && (
-            <>
-              {displayChain.map((message, idx) => (
-                <MessageComp
-                  key={message.id}
-                  message={message}
-                  thread={threadData.thread}
-                />
-              ))}
-              {displayChain.length > 0 &&
-                !!displayChain[displayChain.length - 1]?.sender_auth_id && (
-                  <>
-                    <MessageComp
-                      thread={threadData.thread}
-                      message={{
-                        id: "temp",
-                        parent_id: displayChain[displayChain.length - 1]!.id,
-                        created_at: new Date().toISOString(),
-                        sender_auth_id: null,
-                        text: temporaryResponse + cursor,
-                        thread_id: threadData.thread.id,
-                        indices: {
-                          depthIndex: displayChain.length,
-                          leftSiblingId: null,
-                          rightSiblingId: null,
-                          siblingCount: 0,
-                          siblingIndex: -1,
-                        },
-                      }}
-                    />
-                  </>
-                )}
-              <div ref={scrollRef} />
-            </>
-          )}
-      </div>
-
-      {displayChain.length > 0 &&
-        !!displayChain[displayChain.length - 1]?.sender_auth_id &&
-        temporaryResponse.length > 0 && (
-          <div className="absolute bottom-[120px]">
-            <button
-              onClick={() => terminate()}
-              className="w-36 rounded-md border border-gray-400 bg-gray-100 px-4 py-2 active:opacity-60 dark:bg-gray-600"
-            >
-              Stop ✋
-            </button>
-          </div>
-        )}
-
-      {displayChain.length > 0 &&
-        !displayChain[displayChain.length - 1]?.sender_auth_id && (
-          <div className="absolute bottom-[120px]">
-            <button
-              onClick={() => regenerate()}
-              className="w-36 rounded-md border border-gray-400 bg-gray-100 px-4 py-2 active:opacity-60 dark:bg-gray-600"
-            >
-              Regenerate 🔁
-            </button>
-          </div>
-        )}
-
-      <ExpandingTextarea callback={sendMessage} maxRows={12} />
-    </>
-  );
 };
-
-export default Chatbox;

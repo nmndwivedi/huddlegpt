@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
-const Settingbar = () => {
+const Settingbar = ({
+  setShowTopBar,
+}: {
+  setShowTopBar: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [modelSettings, setModelSettings] = useState<{
     model: "GPT3.5T" | "GPT4";
     creativity: 0 | 1 | 2;
@@ -66,7 +70,12 @@ const Settingbar = () => {
           </div>
 
           <div className="flex justify-end">
-            <button onClick={(e) => setShow(false)}>
+            <button
+              onClick={(e) => {
+                setShow(false);
+                setShowTopBar(false);
+              }}
+            >
               <ChevronUpIcon className="h-5 w-5" />
             </button>
           </div>
@@ -76,7 +85,10 @@ const Settingbar = () => {
         <div className="absolute flex w-full justify-end px-8">
           <button
             className="rounded-b bg-gray-400 px-4 dark:bg-gray-900"
-            onClick={(e) => setShow(true)}
+            onClick={(e) => {
+              setShow(true);
+              setShowTopBar(true);
+            }}
           >
             <ChevronDownIcon className="h-5 w-5" />
           </button>
