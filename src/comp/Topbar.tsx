@@ -13,8 +13,10 @@ import useStore from "~/store/store";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export default function Main({
+  displaySettings,
   setSidebarOpen,
 }: {
+  displaySettings: boolean;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { mutateAsync: getShareableLinkForThread } =
@@ -80,7 +82,7 @@ export default function Main({
     <div ref={parent} className="w-full">
       {show && (
         <>
-          <div className="top-0 z-10 flex h-24 w-full flex-none items-center bg-gray-200  dark:bg-gray-800">
+          <div className="top-0 z-10 flex h-24 w-full flex-none items-center bg-gray-200 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600">
             <div className="top-0 z-10 ml-2 pl-1 pt-1 sm:pl-3 lg:hidden">
               <button
                 type="button"
@@ -143,7 +145,7 @@ export default function Main({
               </div>
             </main>
           </div>
-          <div className="flex flex-row items-end gap-4 bg-gray-300 bg-opacity-60 py-4 px-8 text-sm backdrop-blur-sm dark:bg-gray-800 dark:bg-opacity-60 sm:items-center border-y border-gray-300 dark:border-gray-600">
+          {displaySettings && <div className="flex flex-row items-end gap-4 border-b border-gray-300 bg-gray-300 bg-opacity-60 py-4 px-8 text-sm backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800 dark:bg-opacity-60 sm:items-center">
             <div className="flex w-full flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-start">
               <select
                 value={modelSettings.model}
@@ -203,13 +205,13 @@ export default function Main({
                 <ChevronUpIcon className="h-5 w-5" />
               </button>
             </div>
-          </div>
+          </div>}
         </>
       )}
       {!show && (
         <div className="absolute flex w-full justify-center ">
           <button
-            className="z-20 flex items-center gap-x-2 rounded-b bg-white px-2 py-1 dark:bg-gray-900"
+            className="z-20 flex items-center gap-x-2 rounded-b-lg bg-white px-3 py-1 dark:bg-gray-900"
             onClick={(e) => {
               setShow(true);
             }}
@@ -222,7 +224,7 @@ export default function Main({
               <circle cx="50" cy="50" r="50" />
             </svg>
             <p className="text-xs">1 Online</p>
-            <ChevronDownIcon className="h-5 w-5" />
+            <ChevronDownIcon className="h-4 w-4" />
           </button>
         </div>
       )}

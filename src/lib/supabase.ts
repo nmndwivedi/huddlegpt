@@ -17,6 +17,8 @@ export const supamaster = createClient<Database>(
   SUPABASE_SERVICE_KEY || NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+export type Supamaster = typeof supamaster;
+
 export function throwTRPCError({
   error,
   code,

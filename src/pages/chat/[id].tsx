@@ -79,7 +79,7 @@ const Chat = () => {
       <div className="flex h-screen bg-gray-100 dark:bg-gray-700">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="relative flex flex-1 flex-col items-center w-full">
-          <Topbar setSidebarOpen={setSidebarOpen} />
+          <Topbar setSidebarOpen={setSidebarOpen} displaySettings={true} />
           <Chatbox />
         </div>
       </div>

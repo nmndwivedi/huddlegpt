@@ -16,15 +16,21 @@
  * processing a request
  *
  */
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { supamaster } from "../../lib/supabase";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+
+import { initTRPC, TRPCError } from "@trpc/server";
+import superjson from "superjson";
+import type { User } from "@supabase/auth-helpers-nextjs";
+
+import Stripe from "stripe";
+import { STRIPE_SECRET_KEY } from "../../lib/env";
 
 /**
  * Replace this with an object if you want to pass things to createContextInner
  */
 interface CreateContextOptions {
   user?: User | null;
-  supabase: SupabaseClient<Database, "public", Database["public"]>;
 }
 
 /**
@@ -39,7 +45,6 @@ interface CreateContextOptions {
 const createInnerTRPCContext = (_opts: CreateContextOptions) => {
   return {
     supamaster,
-    supabase: _opts.supabase,
     user: _opts.user,
   };
 };
@@ -51,19 +56,23 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
  */
 export const createTRPCContext = async ({
   req,
-  res,
-}: CreateNextContextOptions) => {
+}: FetchCreateContextFnOptions) => {
   // Create authenticated Supabase Client
-  const supabase = createServerSupabaseClient<Database>({ req, res });
+  let cookie: string | null | undefined = req.headers.get("cookie");
+  let user: User | null = null;
 
-  // Check if we have a session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (cookie) {
+    cookie = decodeURIComponent(cookie);
+    cookie = cookie.split("supabase-auth-token=")[1];
+    if (cookie) cookie = JSON.parse(cookie);
+    cookie = cookie?.[0];
+
+    const { data } = await supamaster.auth.getUser(cookie);
+    user = data.user;
+  }
 
   return createInnerTRPCContext({
     user,
-    supabase,
   });
 };
 
@@ -73,15 +82,6 @@ export const createTRPCContext = async ({
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import {
-  createServerSupabaseClient,
-  SupabaseClient,
-  User,
-} from "@supabase/auth-helpers-nextjs";
-import { Database } from "../../schema";
-
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape }) {
@@ -116,13 +116,8 @@ export const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  // let u = ctx.;
-
   return next({ ctx: { ...ctx, user: ctx.user } });
 });
-
-import Stripe from "stripe";
-import { STRIPE_SECRET_KEY } from "../../lib/env";
 
 export const attachStripe = t.middleware(async ({ ctx, next }) => {
   const stripe = new Stripe(STRIPE_SECRET_KEY, {

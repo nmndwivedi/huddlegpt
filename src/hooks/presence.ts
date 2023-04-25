@@ -132,13 +132,16 @@ const useAdminPresence = ({ threadId }: { threadId: string }) => {
 };
 
 export const useSinglePresence = ({
+  displayChain,
+  setDisplayChain,
   setIsScrolling,
 }: {
+  displayChain: ModMessage[];
+  setDisplayChain: React.Dispatch<React.SetStateAction<ModMessage[]>>;
   setIsScrolling: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const utils = api.useContext();
   const { selectedChatId } = useStore();
-  const [displayChain, setDisplayChain] = useState<ModMessage[]>([]);
   const [triggerCheck, setTriggerCheck] = useState<boolean>(true);
   const { user } = useAuth();
 
@@ -556,5 +559,19 @@ export const useSinglePresence = ({
     setTriggerCheck(true);
   }
 
+  function changeThreadSettings() {}
 
+  return {
+    terminate,
+    threadData,
+    regenerate,
+    sendMessage,
+    findMessageChain,
+    temporaryResponse,
+    handleSubmitPrompt,
+    pushMessageToThread,
+    changeThreadSettings,
+    isError: isErrorMessages || isErrorThread,
+    isLoading: isLoadingMessages || isLoadingThread,
+  };
 };

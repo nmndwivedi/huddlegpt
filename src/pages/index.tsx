@@ -24,11 +24,7 @@ const Home: NextPage = () => {
       <div className="flex h-screen bg-gray-100 dark:bg-gray-700">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="relative flex flex-1 flex-col items-center">
-          <Topbar setSidebarOpen={setSidebarOpen} />
-          <div className="pointer-events-none absolute top-24 h-16 w-full bg-gradient-to-b from-gray-600 opacity-20 dark:from-black"></div>
-          <div className="pointer-events-none absolute bottom-0 h-32 w-full bg-gradient-to-t from-black opacity-40 dark:opacity-60"></div>
-
-          <Settingbar />
+          <Topbar setSidebarOpen={setSidebarOpen} displaySettings={false} />
 
           {!selectedChatId ? (
             <Startbox setModalOpen={setModalOpen} />
